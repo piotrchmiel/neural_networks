@@ -1,5 +1,8 @@
 # Handwritten letter recognition using neural networks
 
+### Trello Board
+   https://trello.com/b/5oY3Xwob/rozpoznawanie-znakow-pisma-odrecznego
+
 ### Materials
    - Install Tensoflow: https://www.tensorflow.org/versions/r0.11/get_started/os_setup.html
    - https://indico.io/blog/tensorflow-data-inputs-part1-placeholders-protobufs-queues/
