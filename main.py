@@ -1,5 +1,5 @@
-from dataset import Mnist
-from neural_network import NeuralNetwork
+from src.dataset import Mnist
+from src.neural_network import NeuralNetwork
 
 def main():
     mnist = Mnist()
