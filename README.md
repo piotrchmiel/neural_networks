@@ -1,6 +1,11 @@
 # Handwritten letter recognition using neural networks
 
-### Trello Board
+### Tensorboard
+Run from terminal:
+
+    $ tensorboard --logdir=tensorflowlogs/
+  
+###Trello Board
    https://trello.com/b/5oY3Xwob/rozpoznawanie-znakow-pisma-odrecznego
 
 ### Materials
