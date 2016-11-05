@@ -1,4 +1,5 @@
 import tensorflow as tf
+import os
 from src.settings import LOG_DIR
 
 
@@ -27,44 +28,62 @@ class NeuralNetwork(object):
         with tf.name_scope('train'):
             self.train_step = tf.train.AdamOptimizer(learning_rate).minimize(self.cross_entropy)
 
+        with tf.name_scope('test'):
+            with tf.name_scope('correct_prediction'):
+                self.correct_prediction = tf.equal(tf.argmax(self.batch_y, 1),
+                                                   tf.argmax(tf.nn.sigmoid(self.hidden_output_layer), 1))
+            with tf.name_scope('accuracy'):
+                self.accuracy_operation = tf.reduce_mean(tf.cast(self.correct_prediction, tf.float32))
+            tf.scalar_summary('accuracy', self.accuracy_operation)
+
         self.session = tf.Session()
         self.model = tf.initialize_all_variables()
 
         if self.debug:
             self.merged = tf.merge_all_summaries()
-            self.train_writer = tf.train.SummaryWriter(LOG_DIR, self.session.graph)
+            self.train_writer = tf.train.SummaryWriter(os.path.join(LOG_DIR, 'train'), self.session.graph)
+            self.test_writer = tf.train.SummaryWriter(os.path.join(LOG_DIR, 'test'))
 
     def fit(self, dataset):
         self.session.run(self.model)
-        total_batch = int(len(dataset.train_labels) / self.batch_size)
-        step = 1
+        total_batch = tf.constant(int(len(dataset.train_labels) / self.batch_size), dtype=tf.float32)
+        partial_avg = tf.div(self.cross_entropy, total_batch)
+        execution = [self.train_step, partial_avg]
+        step = 0
+        if self.debug:
+            execution.extend([self.merged])
 
         for epoch in range(self.training_epochs):
             avg_cost = 0
             batch_iterator = dataset.train_batch_iterator(self.batch_size)
             for train, labels in batch_iterator:
+                _, part_avg, *summary = self.session.run(execution, feed_dict={self.batch_x: train, self.batch_y: labels})
                 if self.debug:
-                    summary, _ = self.session.run([self.merged, self.train_step], feed_dict={self.batch_x: train,
-                                                                                             self.batch_y: labels})
-                    self.train_writer.add_summary(summary, step)
-                    step += 1
-                else:
-                    self.session.run(self.train_step, feed_dict={self.batch_x: train, self.batch_y: labels})
-                avg_cost += self.session.run(self.cross_entropy,
-                                             feed_dict={self.batch_x: train, self.batch_y: labels}) / total_batch
-            print("Epoch {:04d} cost= {:.9f}".format(epoch, avg_cost))
+                    step+=1
+                    self.train_writer.add_summary(summary[0], step)
+                avg_cost += part_avg
+
+            print("Epoch {:04d} cost= {:.9f}, accuracy= {:.9f}".format(epoch, avg_cost, self.accuracy(dataset, step)))
 
         print("Training phase finished")
 
-    def accuracy(self, dataset):
-        correct_prediction = tf.equal(tf.argmax(self.batch_y, 1), tf.argmax(tf.nn.sigmoid(self.hidden_output_layer), 1))
-        accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
-        print("Model accuracy: {0}".format(
-            self.session.run(accuracy, feed_dict={self.batch_x: dataset.test, self.batch_y: dataset.test_labels})))
+    def accuracy(self, dataset, step):
+        execution = [self.accuracy_operation]
+        if self.debug:
+            execution.append(self.merged)
+
+        accuracy_value, *summary = self.session.run(execution, feed_dict={self.batch_x: dataset.test,
+                                                                self.batch_y: dataset.test_labels})
+
+        if self.debug:
+            self.test_writer.add_summary(summary[0], step)
+
+        return accuracy_value
 
     def __del__(self):
         if self.debug:
             self.train_writer.close()
+            self.test_writer.close()
         self.session.close()
 
     def __enter__(self):
@@ -73,6 +92,7 @@ class NeuralNetwork(object):
     def __exit__(self, type, value, traceback):
         if self.debug:
             self.train_writer.close()
+            self.test_writer.close()
         self.session.close()
 
     def nn_layer(self, input_tensor, input_dim, output_dim, layer_name, act=tf.nn.sigmoid):
