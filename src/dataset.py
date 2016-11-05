@@ -1,12 +1,13 @@
+import random
 from sklearn.datasets import fetch_mldata
 from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
 import numpy as np
-import random
 
 
 class Mnist(object):
-    def __init__ (self):
+
+    def __init__(self):
         self.mnist = fetch_mldata('MNIST original')
         self.data_graduation()
         self.split_data()

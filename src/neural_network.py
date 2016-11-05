@@ -1,5 +1,6 @@
-import tensorflow as tf
 import os
+
+import tensorflow as tf
 from src.settings import LOG_DIR
 
 
@@ -15,12 +16,15 @@ class NeuralNetwork(object):
             self.batch_x = tf.placeholder(tf.float32, [None, input_nodes], name="Batch_x_input")
             self.batch_y = tf.placeholder(tf.float32, [None, output_nodes], name="Batch_y_input")
 
-        self.input_hidden_layer = self.nn_layer(self.batch_x, input_nodes, hidden_nodes, "Input_Hidden_Layer")
-        self.hidden_output_layer = self.nn_layer(self.input_hidden_layer, hidden_nodes, output_nodes,
-                                                 'Hidden_Output_Layer', act=tf.identity)
+        self.input_hidden_layer = self.nn_layer(self.batch_x, input_nodes, hidden_nodes,
+                                                "Input_Hidden_Layer")
+        self.hidden_output_layer = self.nn_layer(self.input_hidden_layer, hidden_nodes,
+                                                 output_nodes, 'Hidden_Output_Layer',
+                                                 act=tf.identity)
 
         with tf.name_scope('cross_entropy'):
-            self.diff = tf.nn.sigmoid_cross_entropy_with_logits(self.hidden_output_layer,self.batch_y)
+            self.diff = tf.nn.sigmoid_cross_entropy_with_logits(self.hidden_output_layer,
+                                                                self.batch_y)
             with tf.name_scope('total'):
                 self.cross_entropy = tf.reduce_mean(self.diff)
             tf.scalar_summary('cross entropy', self.cross_entropy)
@@ -31,9 +35,11 @@ class NeuralNetwork(object):
         with tf.name_scope('test'):
             with tf.name_scope('correct_prediction'):
                 self.correct_prediction = tf.equal(tf.argmax(self.batch_y, 1),
-                                                   tf.argmax(tf.nn.sigmoid(self.hidden_output_layer), 1))
+                                                   tf.argmax(
+                                                       tf.nn.sigmoid(self.hidden_output_layer), 1))
             with tf.name_scope('accuracy'):
-                self.accuracy_operation = tf.reduce_mean(tf.cast(self.correct_prediction, tf.float32))
+                self.accuracy_operation = tf.reduce_mean(tf.cast(
+                    self.correct_prediction, tf.float32))
             tf.scalar_summary('accuracy', self.accuracy_operation)
 
         self.session = tf.Session()
@@ -41,12 +47,14 @@ class NeuralNetwork(object):
 
         if self.debug:
             self.merged = tf.merge_all_summaries()
-            self.train_writer = tf.train.SummaryWriter(os.path.join(LOG_DIR, 'train'), self.session.graph)
+            self.train_writer = tf.train.SummaryWriter(os.path.join(LOG_DIR, 'train'),
+                                                       self.session.graph)
             self.test_writer = tf.train.SummaryWriter(os.path.join(LOG_DIR, 'test'))
 
     def fit(self, dataset):
         self.session.run(self.model)
-        total_batch = tf.constant(int(len(dataset.train_labels) / self.batch_size), dtype=tf.float32)
+        total_batch = tf.constant(int(len(dataset.train_labels) / self.batch_size),
+                                  dtype=tf.float32)
         partial_avg = tf.div(self.cross_entropy, total_batch)
         execution = [self.train_step, partial_avg]
         step = 0
@@ -57,13 +65,16 @@ class NeuralNetwork(object):
             avg_cost = 0
             batch_iterator = dataset.train_batch_iterator(self.batch_size)
             for train, labels in batch_iterator:
-                _, part_avg, *summary = self.session.run(execution, feed_dict={self.batch_x: train, self.batch_y: labels})
+                _, part_avg, *summary = self.session.run(execution,
+                                                         feed_dict={self.batch_x: train,
+                                                                    self.batch_y: labels})
                 if self.debug:
-                    step+=1
+                    step += 1
                     self.train_writer.add_summary(summary[0], step)
                 avg_cost += part_avg
 
-            print("Epoch {:04d} cost= {:.9f}, accuracy= {:.9f}".format(epoch, avg_cost, self.accuracy(dataset, step)))
+            print("Epoch {:04d} cost= {:.9f}, accuracy= {:.9f}".format(
+                epoch, avg_cost, self.accuracy(dataset, step)))
 
         print("Training phase finished")
 
@@ -72,8 +83,9 @@ class NeuralNetwork(object):
         if self.debug:
             execution.append(self.merged)
 
-        accuracy_value, *summary = self.session.run(execution, feed_dict={self.batch_x: dataset.test,
-                                                                self.batch_y: dataset.test_labels})
+        accuracy_value, *summary = self.session.run(execution,
+                                                    feed_dict={self.batch_x: dataset.test,
+                                                               self.batch_y: dataset.test_labels})
 
         if self.debug:
             self.test_writer.add_summary(summary[0], step)
@@ -112,13 +124,16 @@ class NeuralNetwork(object):
             tf.histogram_summary(layer_name + '/activations', activations)
             return activations
 
-    def initialize_weights(self, shape):
+    @staticmethod
+    def initialize_weights(shape):
         return tf.Variable(tf.random_normal(shape))
 
-    def initialize_bias(self, nodes):
+    @staticmethod
+    def initialize_bias(nodes):
         return tf.Variable(tf.random_normal([nodes]), "Bias Hidden Layer")
 
-    def variable_summaries(self, var, name):
+    @staticmethod
+    def variable_summaries(var, name):
         with tf.name_scope('summaries'):
             mean = tf.reduce_mean(var)
             tf.scalar_summary('mean/' + name, mean)
