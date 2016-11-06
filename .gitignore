@@ -45,3 +45,7 @@ crashlytics-build.properties
 fabric.properties
 
 # Created by .ignore support plugin (hsz.mobi)
+
+datasets/*.png
+datasets/UJIpenchars-w*
+datasets/ujipenchars2.txt
