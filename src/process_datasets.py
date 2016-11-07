@@ -1,3 +1,4 @@
+import abc
 import glob
 import os
 import matplotlib.pyplot as plt
@@ -7,24 +8,28 @@ import urllib.request
 from scipy.misc import imread
 
 
-class ProcessUJIDataset(object):
+class ProcessUJIDataset(metaclass=abc.ABCMeta):
 
     def __init__(self, dpi=28):
         self.data = {}
         self.images_prefix = ''
         self.dpi = dpi
 
+    @abc.abstractmethod
     def is_dataset_present(self):
-        pass
+        return
 
+    @abc.abstractmethod
     def acquire_dataset(self):
-        pass
+        return
 
+    @abc.abstractmethod
     def read_available_letters(self):
-        pass
+        return
 
+    @abc.abstractmethod
     def extract_letters(self):
-        pass
+        return
 
     def dump_letters(self):
         for letter, letters_data in self.data.items():
@@ -55,6 +60,7 @@ class ProcessUJIDataset(object):
             out_filename = "%s.csv" % self.images_prefix
         with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "datasets", out_filename), 'w') as \
                 out:
+            out.write("%s,%s" % ("symbol", ','.join(["data%d" % i for i in range(self.dpi)])))
             for letter_file in glob.glob(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "datasets",
                                                       "%s-*" % self.images_prefix)):
                 letter = os.path.basename(letter_file).split('-')[1]
@@ -178,6 +184,10 @@ class ProcessUJI2(ProcessUJIDataset):
                                     points = np.column_stack((x, y))
                                     letter_curves.append(points)
                             self.data[letter] += [letter_curves]
+
+
+ProcessUJIDataset.register(ProcessUJI1)
+ProcessUJIDataset.register(ProcessUJI2)
 
 
 class ProcessDatasets(object):
