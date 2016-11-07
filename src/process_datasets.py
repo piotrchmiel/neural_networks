@@ -60,14 +60,14 @@ class ProcessUJIDataset(metaclass=abc.ABCMeta):
             out_filename = "%s.csv" % self.images_prefix
         with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "datasets", out_filename), 'w') as \
                 out:
-            out.write("%s,%s" % ("symbol", ','.join(["data%d" % i for i in range(self.dpi)])))
+            out.write("%s;%s\n" % ("symbol", ';'.join(["data%d" % i for i in range(self.dpi ** 2)])))
             for letter_file in glob.glob(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "datasets",
                                                       "%s-*" % self.images_prefix)):
                 letter = os.path.basename(letter_file).split('-')[1]
                 image = imread(letter_file, flatten=True)
                 image = 255 - image.reshape(self.dpi ** 2)
                 image = (image / 255.0 * 0.99) + 0.01
-                out.write("%s,%s\n" % (letter, ','.join(['%.5f' % num for num in image])))
+                out.write("%s;%s\n" % (letter, ';'.join(['%.5f' % num for num in image])))
 
 
 class ProcessUJI1(ProcessUJIDataset):
