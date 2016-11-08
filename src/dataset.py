@@ -26,7 +26,7 @@ class HandwrittenDataset(metaclass=abc.ABCMeta):
 
     def show_image(self, image_number):
         image = np.reshape(self.dataset.data[image_number], [28, 28])
-        plt.imshow(image, camp='Greys', interpolation='None')
+        plt.imshow(image, cmap='Greys', interpolation='None')
         plt.show()
 
     @abc.abstractmethod
