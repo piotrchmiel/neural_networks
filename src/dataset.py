@@ -1,9 +1,13 @@
 import abc
 import os
 import random
+import zipfile
+
 from sklearn.datasets import fetch_mldata
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
+
+from src.settings import BASE_DIR
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -62,7 +66,7 @@ class Uji(HandwrittenDataset):
 
     def __init__(self):
         self.encoder = LabelEncoder()
-        super(Uji, self).__init__()
+        super().__init__()
 
     def load_data(self):
         self.dataset = UJIData()
@@ -80,14 +84,21 @@ class UJIData(object):
 
     def __init__(self, filenames=None):
         if filenames is None:
-            datasets_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "datasets")
-            filenames = [os.path.join(datasets_dir, "UJI1.csv"), os.path.join(datasets_dir, "UJI2.csv")]
+            datasets_dir = os.path.join(BASE_DIR, "datasets")
+            self.filenames = [os.path.join(datasets_dir, "UJI1.csv"), os.path.join(datasets_dir, "UJI2.csv")]
+
+        try:
+            self.verify_filenames_exists()
+        except OSError as e:
+            compressed = self.find_related_compressed_files(e, '.zip')
+            self._extract_files(compressed)
+
         self.target = []
         self.data = None
-        self.load_data(filenames)
+        self.load_data()
 
-    def load_data(self, filenames):
-        for file in filenames:
+    def load_data(self):
+        for file in self.filenames:
             data = pd.read_csv(file, sep=';', dtype={'symbol': object})
             labels = data['symbol']
             del data['symbol']
@@ -97,3 +108,26 @@ class UJIData(object):
             else:
                 self.data = data
             self.target += list(labels)
+
+    def verify_filenames_exists(self):
+        for path in self.filenames:
+            if not os.path.exists(path):
+                raise OSError(path + " doesn't exists")
+
+    def find_related_compressed_files(self, error, extension):
+        compressed_files = []
+        for path in self.filenames:
+            new_path = "".join([os.path.splitext(path)[0], extension])
+            if os.path.exists(new_path):
+                compressed_files.append(new_path)
+            else:
+                raise OSError(new_path + " doesn't existst") from error
+        return compressed_files
+
+    def _extract_files(self, filenames):
+        print("Extracting files...")
+        for path in filenames:
+            print("Compressed file {0}".format(path))
+            with zipfile.ZipFile(path, 'r') as zip_ref:
+                zip_ref.extractall(os.path.dirname(path))
+        print("Done.")
