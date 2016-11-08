@@ -105,7 +105,7 @@ class UJIData(object):
             self.filenames = [os.path.join(datasets_dir, "UJI1.csv"), os.path.join(datasets_dir, "UJI2.csv")]
 
         try:
-            self.verify_filenames_exists()
+            self.verify_filenames_exist()
         except OSError as e:
             compressed = self.find_related_compressed_files(e, '.zip')
             self._extract_files(compressed)
@@ -126,10 +126,10 @@ class UJIData(object):
                 self.data = data
             self.target += list(labels)
 
-    def verify_filenames_exists(self):
+    def verify_filenames_exist(self):
         for path in self.filenames:
             if not os.path.exists(path):
-                raise OSError(path + " doesn't exists")
+                raise OSError(path + " doesn't exist")
 
     def find_related_compressed_files(self, error, extension):
         compressed_files = []
@@ -138,7 +138,7 @@ class UJIData(object):
             if os.path.exists(new_path):
                 compressed_files.append(new_path)
             else:
-                raise OSError(new_path + " doesn't existst") from error
+                raise OSError(new_path + " doesn't exist") from error
         return compressed_files
 
     def _extract_files(self, filenames):
