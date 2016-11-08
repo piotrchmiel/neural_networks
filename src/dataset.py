@@ -35,7 +35,7 @@ class HandwrittenDataset(metaclass=abc.ABCMeta):
 
     def split_data(self):
         self.train, self.test, self.train_labels, self.test_labels = \
-            train_test_split(self.data, self.labels, train_size=55/70)
+            train_test_split(self.data, self.labels, train_size=0.8)
 
     def train_batch_iterator(self, batch_size):
         #TODO Find more efficient way to do split
