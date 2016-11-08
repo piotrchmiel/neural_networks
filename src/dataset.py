@@ -76,10 +76,6 @@ class Uji(HandwrittenDataset):
         self.labels = self.encoder.fit_transform(self.dataset.target)
 
 
-HandwrittenDataset.register(Mnist)
-HandwrittenDataset.register(Uji)
-
-
 class UJIData(object):
 
     def __init__(self, filenames=None):
