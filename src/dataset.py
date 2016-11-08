@@ -6,12 +6,13 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 import matplotlib.pyplot as plt
 import numpy as np
-from src.utils.csv_parser import CsvParser
+import pandas as pd
 
 
 class HandwrittenDataset(metaclass=abc.ABCMeta):
 
     def __init__(self):
+        self.train, self.test, self.train_labels, self.test_labels = None, None, None, None
         self.load_data()
         self.data_graduation()
         self.split_data()
@@ -69,34 +70,30 @@ class Uji(HandwrittenDataset):
     def data_graduation(self):
         self.data = self.dataset.data
         self.labels = self.encoder.fit_transform(self.dataset.target)
-		
-		
+
+
 HandwrittenDataset.register(Mnist)
 HandwrittenDataset.register(Uji)
 
 
 class UJIData(object):
+
     def __init__(self, filenames=None):
         if filenames is None:
             datasets_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "datasets")
             filenames = [os.path.join(datasets_dir, "UJI1.csv"), os.path.join(datasets_dir, "UJI2.csv")]
         self.target = []
-        self.data = []
+        self.data = None
         self.load_data(filenames)
 
     def load_data(self, filenames):
-        # TODO: make moar efficient way of loading instead of coding it at 1 AM
         for file in filenames:
-            parser = CsvParser(file)
-            dataset = [row for row in parser.get_rows()]
-            labels = UJIData._extract_labels(dataset, parser.get_keys()[0])
-            self.data += [np.array(list(row.values())) for row in dataset]
-            self.target += labels
-
-    @staticmethod
-    def _extract_labels(dataset, classname_column):
-        labels = []
-        for feature_set in dataset:
-            labels.append(str(feature_set[classname_column]))
-            del feature_set[classname_column]
-        return labels
+            data = pd.read_csv(file, sep=';', dtype={'symbol': object})
+            labels = data['symbol']
+            del data['symbol']
+            data = np.array(data)
+            if self.data is not None:
+                self.data = np.concatenate((self.data, data))
+            else:
+                self.data = data
+            self.target += list(labels)
