@@ -2,10 +2,9 @@ import abc
 import os
 import random
 import zipfile
-
+import collections
 from sklearn.datasets import fetch_mldata
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
 
 from src.settings import BASE_DIR
 import matplotlib.pyplot as plt
@@ -23,7 +22,7 @@ class HandwrittenDataset(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def load_data(self):
-        return
+        raise NotImplementedError
 
     def show_image(self, image_number):
         image = np.reshape(self.dataset.data[image_number], [28, 28])
@@ -32,7 +31,7 @@ class HandwrittenDataset(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def data_graduation(self):
-        return
+        raise NotImplementedError
 
     def split_data(self):
         self.train, self.test, self.train_labels, self.test_labels = \
@@ -45,8 +44,19 @@ class HandwrittenDataset(metaclass=abc.ABCMeta):
         for i in range(0, len(self.train_labels), batch_size):
             yield zip(*train[i:i + batch_size])
 
+    @property
+    def feature_number(self):
+        return len(self.data[0])
+
+    @property
+    def label_number(self):
+        return len(set(self.dataset.target))
+
 
 class Mnist(HandwrittenDataset):
+
+    def __init__(self):
+        super().__init__()
 
     def load_data(self):
         self.dataset = fetch_mldata('MNIST original')
@@ -59,13 +69,12 @@ class Mnist(HandwrittenDataset):
             extended_target = np.add(np.zeros(nodes), 0.01)
             extended_target[int(target)] = 0.99
             labels.append(extended_target)
-        self.labels = np.asarray(labels, dtype=np.float64)
+        self.labels = np.asarray(labels, dtype=np.float32)
 
 
 class Uji(HandwrittenDataset):
 
     def __init__(self):
-        self.encoder = LabelEncoder()
         super().__init__()
 
     def load_data(self):
@@ -73,7 +82,19 @@ class Uji(HandwrittenDataset):
 
     def data_graduation(self):
         self.data = self.dataset.data
-        self.labels = self.encoder.fit_transform(self.dataset.target)
+        self.label_encoder()
+
+    def label_encoder(self):
+        unique_classes = sorted(tuple(set(self.dataset.target)))
+        self.encoded_labels = collections.defaultdict(lambda: np.add(np.zeros(len(unique_classes)), 0.01))
+        self.labels = list()
+        for i, label in enumerate(unique_classes):
+            self.encoded_labels[label][i] = 0.99
+
+        for target in self.dataset.target:
+            self.labels.append(self.encoded_labels[target])
+
+        self.labels = np.asarray(self.labels, dtype=np.float32)
 
 
 class UJIData(object):
