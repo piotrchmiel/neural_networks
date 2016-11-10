@@ -7,10 +7,11 @@ from src.settings import LOG_DIR
 class NeuralNetwork(object):
 
     def __init__(self, input_nodes: int, hidden_nodes: int, output_nodes: int,
-                 learning_rate: float, batch_size: int, training_epochs: int, debug=False):
+                 learning_rate: float, batch_size: int, training_epochs: int, dropout: float, debug=False):
         self.batch_size = batch_size
         self.training_epochs = training_epochs
         self.debug = debug
+        self.dropout = dropout
 
         with tf.name_scope('input'):
             self.batch_x = tf.placeholder(tf.float32, [None, input_nodes], name="Batch_x_input")
@@ -18,7 +19,13 @@ class NeuralNetwork(object):
 
         self.input_hidden_layer = self.nn_layer(self.batch_x, input_nodes, hidden_nodes,
                                                 "Input_Hidden_Layer")
-        self.hidden_output_layer = self.nn_layer(self.input_hidden_layer, hidden_nodes,
+
+        with tf.name_scope('dropout'):
+            self.keep_prob = tf.placeholder(tf.float32)
+            tf.scalar_summary('dropout_keep_probability', self.keep_prob)
+            self.dropped = tf.nn.dropout(self.input_hidden_layer, self.keep_prob)
+
+        self.hidden_output_layer = self.nn_layer(self.dropped, hidden_nodes,
                                                  output_nodes, 'Hidden_Output_Layer',
                                                  act=tf.identity)
 
@@ -67,7 +74,8 @@ class NeuralNetwork(object):
             for train, labels in batch_iterator:
                 _, part_avg, *summary = self.session.run(execution,
                                                          feed_dict={self.batch_x: train,
-                                                                    self.batch_y: labels})
+                                                                    self.batch_y: labels,
+                                                                    self.keep_prob: self.dropout})
                 if self.debug:
                     step += 1
                     self.train_writer.add_summary(summary[0], step)
@@ -85,7 +93,8 @@ class NeuralNetwork(object):
 
         accuracy_value, *summary = self.session.run(execution,
                                                     feed_dict={self.batch_x: dataset.test,
-                                                               self.batch_y: dataset.test_labels})
+                                                               self.batch_y: dataset.test_labels,
+                                                               self.keep_prob: 1.0})
 
         if self.debug:
             self.test_writer.add_summary(summary[0], step)
