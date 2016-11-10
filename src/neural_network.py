@@ -135,11 +135,11 @@ class NeuralNetwork(object):
 
     @staticmethod
     def initialize_weights(shape):
-        return tf.Variable(tf.random_normal(shape))
+        return tf.Variable(tf.truncated_normal(shape, stddev=0.1))
 
     @staticmethod
     def initialize_bias(nodes):
-        return tf.Variable(tf.random_normal([nodes]), "Bias Hidden Layer")
+        return tf.Variable(tf.truncated_normal([nodes], stddev=0.1), "Bias Hidden Layer")
 
     @staticmethod
     def variable_summaries(var, name):
