@@ -17,19 +17,19 @@ class ProcessUJIDataset(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def is_dataset_present(self):
-        return
+        raise NotImplementedError
 
     @abc.abstractmethod
     def acquire_dataset(self):
-        return
+        raise NotImplementedError
 
     @abc.abstractmethod
     def read_available_letters(self):
-        return
+        raise NotImplementedError
 
     @abc.abstractmethod
     def extract_letters(self):
-        return
+        raise NotImplementedError
 
     def dump_letters(self):
         for letter, letters_data in self.data.items():
@@ -184,10 +184,6 @@ class ProcessUJI2(ProcessUJIDataset):
                                     points = np.column_stack((x, y))
                                     letter_curves.append(points)
                             self.data[letter] += [letter_curves]
-
-
-ProcessUJIDataset.register(ProcessUJI1)
-ProcessUJIDataset.register(ProcessUJI2)
 
 
 class ProcessDatasets(object):
