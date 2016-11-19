@@ -7,6 +7,6 @@ from src.settings import OBJECT_DIR
 uji = joblib.load(os.path.join(OBJECT_DIR, "Uji"))
 
 with load_neural_network() as nn:
-    print("Sample result {}, Should be {}".format(nn.predict(uji.test[0], uji.map_result),
-                                                  uji.map_result(np.argmax(uji.test_labels[0]))))
+    print("Sample result {}, Should be {}".format(nn.predict(uji.test[670], uji.map_result),
+                                                  uji.map_result(np.argmax(uji.test_labels[670]))))
     print("Accuracy: {}".format(nn.accuracy(uji)))
