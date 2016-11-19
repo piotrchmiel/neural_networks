@@ -27,8 +27,8 @@ class HandwrittenDataset(metaclass=abc.ABCMeta):
     def load_data(self):
         raise NotImplementedError
 
-    def show_image(self, image_number):
-        image = np.reshape(self.dataset.data[image_number], [28, 28])
+    def show_image(self, image):
+        image = np.reshape(image, [28, 28])
         plt.imshow(image, cmap='Greys', interpolation='None')
         plt.show()
 
@@ -91,10 +91,10 @@ class Uji(HandwrittenDataset):
         return np.add(np.zeros(len(unique_classes)), 0.01)
 
     def label_encoder(self):
-        unique_classes = sorted(tuple(set(self.dataset.target)))
-        self.encoded_labels = collections.defaultdict(partial(self._init_encoded_labels, unique_classes))
+        self.unique_classes = sorted(tuple(set(self.dataset.target)))
+        self.encoded_labels = collections.defaultdict(partial(self._init_encoded_labels, self.unique_classes))
         self.labels = list()
-        for i, label in enumerate(unique_classes):
+        for i, label in enumerate(self.unique_classes):
             self.encoded_labels[label][i] = 0.99
 
         for target in self.dataset.target:
@@ -102,6 +102,8 @@ class Uji(HandwrittenDataset):
 
         self.labels = np.asarray(self.labels, dtype=np.float32)
 
+    def map_result(self, index):
+        return self.unique_classes[index]
 
 
 class UJIData(object):

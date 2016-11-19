@@ -45,10 +45,12 @@ class NeuralNetwork(object):
             self.train_step = tf.train.AdamOptimizer(self.learning_rate).minimize(self.cross_entropy)
 
         with tf.name_scope('test'):
+            with tf.name_scope('prediction'):
+                self.prediction = tf.argmax(tf.nn.sigmoid(self.hidden_output_layer), 1)
+
             with tf.name_scope('correct_prediction'):
-                self.correct_prediction = tf.equal(tf.argmax(self.batch_y, 1),
-                                                   tf.argmax(
-                                                       tf.nn.sigmoid(self.hidden_output_layer), 1))
+                self.correct_prediction = tf.equal(tf.argmax(self.batch_y, 1), self.prediction)
+
             with tf.name_scope('accuracy'):
                 self.accuracy_operation = tf.reduce_mean(tf.cast(
                     self.correct_prediction, tf.float32))
@@ -62,6 +64,12 @@ class NeuralNetwork(object):
             self.train_writer = tf.train.SummaryWriter(os.path.join(LOG_DIR, 'train'),
                                                        self.session.graph)
             self.test_writer = tf.train.SummaryWriter(os.path.join(LOG_DIR, 'test'))
+
+    def predict(self, data, map_function):
+        result = self.session.run(self.prediction, feed_dict={self.batch_x: [data], self.keep_prob: 1.0 })[0]
+        if callable(map_function):
+            result = map_function(result)
+        return result
 
     def fit(self, dataset):
         self.session.run(self.model)
