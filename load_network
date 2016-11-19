@@ -1,0 +1,8 @@
+import os
+import joblib
+from src.utils import load_neural_network
+from src.settings import OBJECT_DIR
+
+uji = joblib.load(os.path.join(OBJECT_DIR, "Uji"))
+with load_neural_network() as nn:
+    print("Accuracy: {}".format(nn.accuracy(uji)))

@@ -1,7 +1,8 @@
 import os
-
+import joblib
 import tensorflow as tf
-from src.settings import LOG_DIR
+from src.settings import LOG_DIR, OBJECT_DIR
+
 
 
 class NeuralNetwork(object):
@@ -12,6 +13,10 @@ class NeuralNetwork(object):
         self.training_epochs = training_epochs
         self.debug = debug
         self.dropout = dropout
+        self.input_nodes = input_nodes
+        self.hidden_nodes = hidden_nodes
+        self.output_nodes = output_nodes
+        self.learning_rate = learning_rate
 
         with tf.name_scope('input'):
             self.batch_x = tf.placeholder(tf.float32, [None, input_nodes], name="Batch_x_input")
@@ -37,7 +42,7 @@ class NeuralNetwork(object):
             tf.scalar_summary('cross entropy', self.cross_entropy)
 
         with tf.name_scope('train'):
-            self.train_step = tf.train.AdamOptimizer(learning_rate).minimize(self.cross_entropy)
+            self.train_step = tf.train.AdamOptimizer(self.learning_rate).minimize(self.cross_entropy)
 
         with tf.name_scope('test'):
             with tf.name_scope('correct_prediction'):
@@ -86,7 +91,7 @@ class NeuralNetwork(object):
 
         print("Training phase finished")
 
-    def accuracy(self, dataset, step):
+    def accuracy(self, dataset, step=-1):
         execution = [self.accuracy_operation]
         if self.debug:
             execution.append(self.merged)
@@ -132,6 +137,19 @@ class NeuralNetwork(object):
             activations = act(preactivate, 'activation')
             tf.histogram_summary(layer_name + '/activations', activations)
             return activations
+
+    def save_model(self):
+        init_params = {'input_nodes': self.input_nodes, 'hidden_nodes': self.hidden_nodes,
+                       'output_nodes': self.output_nodes, 'learning_rate': self.learning_rate,
+                       'batch_size': self.batch_size, 'training_epochs': self.training_epochs,
+                       'dropout': self.dropout, 'debug': self.debug}
+        joblib.dump(init_params, os.path.join(OBJECT_DIR, 'init_params.pickle'))
+        tf.train.Saver(tf.all_variables()).save(self.session, os.path.join(OBJECT_DIR, 'model.ckpt'))
+
+    def load_model(self):
+        ckpt = tf.train.get_checkpoint_state(OBJECT_DIR)
+        if ckpt and ckpt.model_checkpoint_path:
+            tf.train.Saver(tf.all_variables()).restore(self.session, ckpt.model_checkpoint_path)
 
     @staticmethod
     def initialize_weights(shape):

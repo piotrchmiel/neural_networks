@@ -3,6 +3,9 @@ import os
 import random
 import zipfile
 import collections
+
+from functools import partial
+
 from sklearn.datasets import fetch_mldata
 from sklearn.model_selection import train_test_split
 
@@ -84,9 +87,12 @@ class Uji(HandwrittenDataset):
         self.data = self.dataset.data
         self.label_encoder()
 
+    def _init_encoded_labels(self, unique_classes):
+        return np.add(np.zeros(len(unique_classes)), 0.01)
+
     def label_encoder(self):
         unique_classes = sorted(tuple(set(self.dataset.target)))
-        self.encoded_labels = collections.defaultdict(lambda: np.add(np.zeros(len(unique_classes)), 0.01))
+        self.encoded_labels = collections.defaultdict(partial(self._init_encoded_labels, unique_classes))
         self.labels = list()
         for i, label in enumerate(unique_classes):
             self.encoded_labels[label][i] = 0.99
@@ -95,6 +101,7 @@ class Uji(HandwrittenDataset):
             self.labels.append(self.encoded_labels[target])
 
         self.labels = np.asarray(self.labels, dtype=np.float32)
+
 
 
 class UJIData(object):
