@@ -4,7 +4,6 @@ import tensorflow as tf
 from src.settings import LOG_DIR, OBJECT_DIR
 
 
-
 class NeuralNetwork(object):
 
     def __init__(self, input_nodes: int, hidden_nodes: int, output_nodes: int,
