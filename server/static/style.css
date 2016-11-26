@@ -1,0 +1,43 @@
+#drawing-mode {
+  margin-bottom: 10px;
+  vertical-align: top;
+}
+#drawing-mode-options {
+  display: inline-block;
+  vertical-align: top;
+  margin-bottom: 10px;
+  margin-top: 10px;
+  background: #f5f2f0;
+  padding: 10px;
+}
+label {
+  display: inline-block; width: 130px;
+}
+.info {
+  display: inline-block;
+  width: 25px;
+  background: #ffc;
+}
+#bd-wrapper {
+  min-width: 1500px;
+}
+html {
+  position: relative;
+  min-height: 100%;
+}
+body {
+  padding-top: 70px;
+  padding-bottom: 30px;
+  margin-bottom: 60px;
+}
+.footer {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  /* Set the fixed height of the footer here */
+  height: 60px;
+  background-color: #f5f5f5;
+}
+.container .text-muted {
+  margin: 20px 0;
+}
