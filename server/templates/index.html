@@ -1,86 +1,81 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Rozpoznawanie pisma odręcznego</title>
 
     <link href="{{ url_for('static', filename='bootstrap.min.css') }}" rel="stylesheet">
-	<link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
-	<script src="{{ url_for('static', filename='fabric.min.js') }}"></script>
+    <link href="{{ url_for('static', filename='bootstrap-toggle.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
+    <script src="{{ url_for('static', filename='fabric.min.js') }}"></script>
     <script src="{{ url_for('static', filename='jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
-  </head>
-  <body>
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container">
+    <script src="{{ url_for('static', filename='bootstrap-toggle.min.js') }}"></script>
+</head>
+<body>
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
         <div class="navbar-header">
-          <a class="navbar-brand" href="#">Rozpoznawanie pisma</a>
+            <a class="navbar-brand" href="#">System rozpoznawania pisma oparty o sieć neuronową</a>
         </div>
-      </div>
-    </nav>
-    <div class="container" role="main">
-      <div class="jumbotron">
-        <h1>System rozpoznawania pisma oparty o sieć neuronową</h1>
-        <p>Proszę narysować literę w poniższym polu</p>
-      </div>
-      <div class="row">
-        <div class="col-md-6 center-block">
-          <canvas id="c" width="500" height="500" style="border:1px solid #aaa"></canvas>
-          <canvas id="copyCanvas" width="500" height="500" style="display: none;"></canvas>
-        </div>
-
-        <div class="col-md-6">
-          <form>
-            <div class="checkbox">
-              <label>
-                <input type="checkbox" id="erase">Tryb gumki
-              </label>
-            </div>
-
-          </form>
-          <button id="clear-canvas" class="btn btn-danger">Wyczyść pole</button>
-          <button id="recognize" class="btn btn-primary">Rozpoznaj znak</button>
-        </div>
-      </div>
     </div>
-    <footer class="footer">
-      <div class="container">
+</nav>
+<div class="container" role="main">
+    <p class="lead">Proszę narysować literę w poniższym polu</p>
+    <div class="center-block drawing">
+        <canvas id="c" width="500" height="500" style="border:1px solid #aaa"></canvas>
+        <canvas id="copyCanvas" width="500" height="500" style="display: none;"></canvas>
+
+        <label class="checkbox-inline">
+            <input checked data-toggle="toggle" data-on="Wł." data-off="Wył." data-onstyle="info" type="checkbox" id="erase"> Tryb gumki
+        </label>
+
+        <button id="clear-canvas" class="btn btn-danger">Wyczyść pole</button>
+        <button id="recognize" class="btn btn-primary">Rozpoznaj znak</button>
+    </div>
+</div>
+<footer class="footer">
+    <div class="container">
         <p class="text-muted">&copy; 2016</p>
-      </div>
-    </footer>
-    <script id="main">(function() {
-      var $ = function(id){return document.getElementById(id)};
+    </div>
+</footer>
+<script id="main">(function () {
+    var $ = function (id) {
+        return document.getElementById(id)
+    };
 
-      var canvas = this.__canvas = new fabric.Canvas('c', {
+    var canvas = this.__canvas = new fabric.Canvas('c', {
         isDrawingMode: true
-      });
-      var copyCanvas = new fabric.Canvas('copyCanvas');
-      copyCanvas.getContext().canvas.parentElement.style = 'display: none';
+    });
+    var copyCanvas = new fabric.Canvas('copyCanvas');
+    copyCanvas.getContext().canvas.parentElement.style = 'display: none';
 
-      var clearEl = $('clear-canvas'),
-          recognizeEl = $('recognize'),
-          erase = $('erase');
+    var clearEl = $('clear-canvas'),
+        recognizeEl = $('recognize'),
+        erase = $('erase');
 
-      clearEl.onclick = function() { canvas.clear() };
-      erase.onchange = function() {
-          if(this.checked) {
-              canvas.freeDrawingBrush.color = '#ffffff';
-          } else {
-              canvas.freeDrawingBrush.color = '#000000';
-          }
-      };
-      recognizeEl.onclick = function() {
+    clearEl.onclick = function () {
+        canvas.clear()
+    };
+    erase.onchange = function () {
+        if (this.checked) {
+            canvas.freeDrawingBrush.color = '#ffffff';
+        } else {
+            canvas.freeDrawingBrush.color = '#000000';
+        }
+    };
+    recognizeEl.onclick = function () {
         copyCanvas.setWidth(canvas.getWidth());
         copyCanvas.setHeight(canvas.getHeight());
         var copyContext = copyCanvas.getContext('2d');
         copyContext.drawImage(canvas.getContext().canvas, 0, 0);
-        copyCanvas.setWidth(28);
-        copyCanvas.setHeight(28);
+        copyCanvas.setWidth({{ image_side_pixels }});
+        copyCanvas.setHeight({{ image_side_pixels }});
         copyCanvas._objects = canvas.getObjects();
         var objects = copyCanvas.getObjects();
-        var factor = 28.0 / 500.0;
+        var factor = {{ image_side_pixels }}.0 / 500.0;
         for (var i in objects) {
             var scaleX = objects[i].scaleX;
             var scaleY = objects[i].scaleY;
@@ -100,33 +95,43 @@
             objects[i].setCoords();
         }
         copyCanvas.renderAll();
+        var canvas_data = copyCanvas.toDataURL('png');
         copyCanvas.calcOffset();
-        console.log(copyCanvas.toDataURL('png'));
+        jQuery.ajax({
+          url: '/upload',
+          type: 'POST',
+          data: { 'image': canvas_data },
+          success: function(data) {
+            alert(data);
+          },
+          error: function(e) {
+          }
+        });
         copyCanvas.clear();
-      };
+    };
 
-      if (canvas.freeDrawingBrush) {
+    if (canvas.freeDrawingBrush) {
         canvas.freeDrawingBrush.color = '#000000';
         canvas.freeDrawingBrush.width = 10;
         canvas.freeDrawingBrush.shadowBlur = 0;
-      }
-    })();
-    </script>
-    <script>
-    (function() {
-      fabric.util.addListener(fabric.window, 'load', function() {
-        var canvas = this.__canvas || this.canvas,
-            canvases = this.__canvases || this.canvases;
+    }
+})();
+</script>
+<script>
+    (function () {
+        fabric.util.addListener(fabric.window, 'load', function () {
+            var canvas = this.__canvas || this.canvas,
+                canvases = this.__canvases || this.canvases;
 
-        canvas && canvas.calcOffset && canvas.calcOffset();
+            canvas && canvas.calcOffset && canvas.calcOffset();
 
-        if (canvases && canvases.length) {
-          for (var i = 0, len = canvases.length; i < len; i++) {
-            canvases[i].calcOffset();
-          }
-        }
-      });
+            if (canvases && canvases.length) {
+                for (var i = 0, len = canvases.length; i < len; i++) {
+                    canvases[i].calcOffset();
+                }
+            }
+        });
     })();
-    </script>
-  </body>
+</script>
+</body>
 </html>

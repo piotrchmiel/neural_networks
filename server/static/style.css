@@ -10,9 +10,6 @@
   background: #f5f2f0;
   padding: 10px;
 }
-label {
-  display: inline-block; width: 130px;
-}
 .info {
   display: inline-block;
   width: 25px;
@@ -40,4 +37,12 @@ body {
 }
 .container .text-muted {
   margin: 20px 0;
+}
+@media (min-width: 768px) {
+  .container {
+    max-width: 730px;
+  }
+}
+.drawing {
+  width: 500px;
 }

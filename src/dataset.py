@@ -9,7 +9,7 @@ from functools import partial
 from sklearn.datasets import fetch_mldata
 from sklearn.model_selection import train_test_split
 
-from src.settings import BASE_DIR
+from src.settings import BASE_DIR, IMAGE_SIDE_PIXELS
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -28,7 +28,7 @@ class HandwrittenDataset(metaclass=abc.ABCMeta):
         raise NotImplementedError
 
     def show_image(self, image):
-        image = np.reshape(image, [28, 28])
+        image = np.reshape(image, [IMAGE_SIDE_PIXELS, IMAGE_SIDE_PIXELS])
         plt.imshow(image, cmap='Greys', interpolation='None')
         plt.show()
 

@@ -6,11 +6,12 @@ import numpy as np
 import re
 import urllib.request
 from scipy.misc import imread
+from src.settings import IMAGE_SIDE_PIXELS
 
 
 class ProcessUJIDataset(metaclass=abc.ABCMeta):
 
-    def __init__(self, dpi=28):
+    def __init__(self, dpi=IMAGE_SIDE_PIXELS):
         self.data = {}
         self.images_prefix = ''
         self.dpi = dpi

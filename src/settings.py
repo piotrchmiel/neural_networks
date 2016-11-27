@@ -12,3 +12,5 @@ OBJECT_DIR = path.join(BASE_DIR, 'tensorflowobjects')
 
 if not path.exists(OBJECT_DIR):
     makedirs(OBJECT_DIR)
+
+IMAGE_SIDE_PIXELS = 28
