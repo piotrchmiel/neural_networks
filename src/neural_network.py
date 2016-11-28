@@ -80,6 +80,8 @@ class NeuralNetwork(object):
         if self.debug:
             execution.extend([self.merged])
 
+        print("Accuracy without any step= {:.9f}".format(self.accuracy(dataset, -1)))
+
         for epoch in range(self.training_epochs):
             avg_cost = 0
             batch_iterator = dataset.train_batch_iterator(self.batch_size)
