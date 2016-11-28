@@ -4,9 +4,11 @@ import numpy as np
 from src.utils import load_neural_network
 from src.settings import OBJECT_DIR
 
-uji = joblib.load(os.path.join(OBJECT_DIR, "Uji"))
+dataset = joblib.load(os.path.join(OBJECT_DIR, "Mnist"))
 
 with load_neural_network() as nn:
-    print("Sample result {}, Should be {}".format(nn.predict(uji.test[670], uji.map_result),
-                                                  uji.map_result(np.argmax(uji.test_labels[670]))))
-    print("Accuracy: {}".format(nn.accuracy(uji)))
+
+    dataset.show_image(dataset.test[98])
+    print("Sample result {}, Should be {}".format(nn.predict(dataset.test[98], dataset.map_result),
+                                                  dataset.map_result(np.argmax(dataset.test_labels[98]))))
+    print("Accuracy: {}".format(nn.accuracy(dataset)))
