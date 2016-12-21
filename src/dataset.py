@@ -55,6 +55,9 @@ class HandwrittenDataset(metaclass=abc.ABCMeta):
     def label_number(self):
         return len(set(self.dataset.target))
 
+    @abc.abstractmethod
+    def map_result(self, index):
+        raise NotImplementedError
 
 class Mnist(HandwrittenDataset):
 
@@ -65,8 +68,13 @@ class Mnist(HandwrittenDataset):
         self.dataset = fetch_mldata('MNIST original')
 
     def data_graduation(self):
-        self.data = np.add(np.dot(np.divide(self.dataset.data, 255), 0.99), 0.01)
-        nodes = np.unique(self.dataset.target).size
+        self.dataset.data = self.dataset.data.astype(np.float)
+        self.dataset.data[self.dataset.data != 0.0] = 0.99
+        self.dataset.data[self.dataset.data == 0.0] = 0.01
+        #self.data = np.add(np.dot(np.divide(self.dataset.data, 255), 0.99), 0.01)
+        self.data = self.dataset.data
+        self.unique_classes = sorted(np.unique(self.dataset.target).tolist())
+        nodes = len(self.unique_classes)
         labels = []
         for target in self.dataset.target:
             extended_target = np.add(np.zeros(nodes), 0.01)
@@ -74,6 +82,8 @@ class Mnist(HandwrittenDataset):
             labels.append(extended_target)
         self.labels = np.asarray(labels, dtype=np.float32)
 
+    def map_result(self, index):
+        return self.unique_classes[index]
 
 class Uji(HandwrittenDataset):
 

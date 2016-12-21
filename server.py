@@ -29,7 +29,7 @@ def process_image():
     data = request.form['image']
     image = load_image_from_base64_uri(data)
     image = normalize_image(image)
-    return nn.predict(image, uji.map_result)
+    return str(nn.predict(image, dataset.map_result))
 
 
 def load_image_from_base64_uri(encoded_uri):
@@ -46,15 +46,16 @@ def load_image_from_base64_uri(encoded_uri):
 
 def normalize_image(image):
     image = 255 - image.reshape(IMAGE_SIDE_PIXELS ** 2)
-    image = (image / 255.0 * 0.99) + 0.01
+    image[image != 0.0] = 0.99
+    image[image == 0.0] = 0.01
+    #image = (image / 255.0 * 0.99) + 0.01
     return image
 
 
 def init_server():
-    global uji, nn
-    uji = joblib.load(os.path.join(OBJECT_DIR, "Uji"))
+    global dataset, nn
+    dataset = joblib.load(os.path.join(OBJECT_DIR, "Mnist"))
     nn = load_neural_network()
-
 
 if __name__ == '__main__':
     init_server()
