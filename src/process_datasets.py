@@ -49,11 +49,11 @@ class ProcessUJIDataset(metaclass=abc.ABCMeta):
                 if letter.isalpha():
                     if letter.isupper():
                         additional_filename += "-big"
-                    elif letter.islower():
-                        additional_filename += "-sml"
-                plt.savefig(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "datasets",
-                                         "%s-%s%s-%d.png" % (self.images_prefix, letter, additional_filename, i)),
-                            dpi=self.dpi)
+                    # elif letter.islower():
+                    #     additional_filename += "-sml"
+                        plt.savefig(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "datasets",
+                                                 "%s-%s%s-%d.png" % (self.images_prefix, letter, additional_filename, i)
+                                                 ), dpi=self.dpi)
                 i += 1
 
     def create_csv(self, out_filename=None):
