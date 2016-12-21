@@ -8,11 +8,13 @@
 
     <link href="{{ url_for('static', filename='bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='bootstrap-toggle.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='bootstrap-slider.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
     <script src="{{ url_for('static', filename='fabric.min.js') }}"></script>
     <script src="{{ url_for('static', filename='jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
     <script src="{{ url_for('static', filename='bootstrap-toggle.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='bootstrap-slider.min.js') }}"></script>
 </head>
 <body>
 <nav class="navbar navbar-inverse navbar-fixed-top">
@@ -34,6 +36,8 @@
 
         <button id="clear-canvas" class="btn btn-danger">Wyczyść pole</button>
         <button id="recognize" class="btn btn-primary">Rozpoznaj znak</button>
+
+        <div>Grubość pisaka: <input type="text" id="slider" data-provide="slider" data-slider-min="1" data-slider-max="20" data-slider-step="1" data-slider-value="10" data-slider-tooltip="hide"></div>
     </div>
 </div>
 <footer class="footer">
@@ -129,6 +133,20 @@
                 for (var i = 0, len = canvases.length; i < len; i++) {
                     canvases[i].calcOffset();
                 }
+            }
+        });
+
+        var sliderVal;
+
+        $('#slider').slider().on('slideStart', function(ev){
+            sliderVal = $('#slider').data('slider').getValue();
+        });
+
+        $('#slider').slider().on('slideStop', function(ev){
+            var newSliderVal = $('#slider').data('slider').getValue();
+            if(sliderVal != newSliderVal) {
+                var canvas = window.__canvas || window.canvas;
+                canvas.freeDrawingBrush.width = newSliderVal;
             }
         });
     })();
