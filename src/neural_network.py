@@ -1,6 +1,7 @@
 import os
 import joblib
 import tensorflow as tf
+import numpy as np
 from src.settings import LOG_DIR, OBJECT_DIR
 
 
@@ -65,7 +66,10 @@ class NeuralNetwork(object):
             self.test_writer = tf.train.SummaryWriter(os.path.join(LOG_DIR, 'test'))
 
     def predict(self, data, map_function):
-        result = self.session.run(self.prediction, feed_dict={self.batch_x: [data], self.keep_prob: 1.0 })[0]
+        result = self.session.run(self.prediction, feed_dict={self.batch_x: np.asarray([data], dtype=np.float32),
+                                                              self.keep_prob: 1.0 })[0]
+        print(self.session.run(tf.nn.sigmoid(self.hidden_output_layer),
+                               feed_dict={self.batch_x: np.asarray([data], dtype=np.float32),self.keep_prob: 1.0 }))
         if callable(map_function):
             result = map_function(result)
         return result
@@ -87,7 +91,7 @@ class NeuralNetwork(object):
             batch_iterator = dataset.train_batch_iterator(self.batch_size)
             for train, labels in batch_iterator:
                 _, part_avg, *summary = self.session.run(execution,
-                                                         feed_dict={self.batch_x: train,
+                                                         feed_dict={self.batch_x: np.asarray(train, dtype=np.float32),
                                                                     self.batch_y: labels,
                                                                     self.keep_prob: self.dropout})
                 if self.debug:
@@ -104,7 +108,6 @@ class NeuralNetwork(object):
         execution = [self.accuracy_operation]
         if self.debug:
             execution.append(self.merged)
-
         accuracy_value, *summary = self.session.run(execution,
                                                     feed_dict={self.batch_x: dataset.test,
                                                                self.batch_y: dataset.test_labels,
