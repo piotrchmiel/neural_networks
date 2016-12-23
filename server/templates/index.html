@@ -9,12 +9,14 @@
     <link href="{{ url_for('static', filename='bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='bootstrap-toggle.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='bootstrap-slider.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='bootstrap-dialog.min.css') }}" rel="stylesheet">
     <link href="{{ url_for('static', filename='style.css') }}" rel="stylesheet">
     <script src="{{ url_for('static', filename='fabric.min.js') }}"></script>
     <script src="{{ url_for('static', filename='jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
     <script src="{{ url_for('static', filename='bootstrap-toggle.min.js') }}"></script>
     <script src="{{ url_for('static', filename='bootstrap-slider.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='bootstrap-dialog.min.js') }}"></script>
 </head>
 <body>
 <nav class="navbar navbar-inverse navbar-fixed-top">
@@ -31,13 +33,13 @@
         <canvas id="copyCanvas" width="500" height="500" style="display: none;"></canvas>
 
         <label class="checkbox-inline">
-            <input checked data-toggle="toggle" data-on="Wł." data-off="Wył." data-onstyle="info" type="checkbox" id="erase"> Tryb gumki
+            <input data-toggle="toggle" data-on="Wł." data-off="Wył." data-onstyle="info" type="checkbox" id="erase"> Tryb gumki
         </label>
 
         <button id="clear-canvas" class="btn btn-danger">Wyczyść pole</button>
         <button id="recognize" class="btn btn-primary">Rozpoznaj znak</button>
 
-        <div>Grubość pisaka: <input type="text" id="slider" data-provide="slider" data-slider-min="1" data-slider-max="20" data-slider-step="1" data-slider-value="10" data-slider-tooltip="hide"></div>
+        <div>Grubość pisaka: <input type="text" id="slider" data-provide="slider" data-slider-min="1" data-slider-max="50" data-slider-step="1" data-slider-value="40" data-slider-tooltip="hide"></div>
     </div>
 </div>
 <footer class="footer">
@@ -106,12 +108,14 @@
           type: 'POST',
           data: { 'image': canvas_data },
           success: function(data) {
-            alert(data);
+            BootstrapDialog.show({title: 'Rozpoznana litera', message: data});
           },
           error: function(e) {
+            BootstrapDialog.show({type: BootstrapDialog.TYPE_DANGER, title: 'Błąd rozpoznawania!', message: ''});
           }
         });
         copyCanvas.clear();
+        canvas.clear();
     };
 
     if (canvas.freeDrawingBrush) {

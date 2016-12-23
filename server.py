@@ -1,6 +1,6 @@
 import os
 import joblib
-from flask import Flask, render_template, request, send_from_directory
+from flask import Flask, render_template, request, send_from_directory, abort
 from src.utils import load_neural_network
 from src.image_utils import load_image_from_base64_uri, process_image
 from src.settings import OBJECT_DIR, IMAGE_SIDE_PIXELS
@@ -25,8 +25,11 @@ def send_static(path):
 def handle_image():
     data = request.form['image']
     image = load_image_from_base64_uri(data)
-    image = process_image(image)
-    return str(nn.predict(image, dataset.map_result))
+    try:
+        image = process_image(image)
+        return str(nn.predict(image, dataset.map_result))
+    except:
+        abort(500)
 
 
 def init_server():
