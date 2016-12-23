@@ -7,6 +7,7 @@ import re
 import urllib.request
 from scipy.misc import imread
 from src.settings import IMAGE_SIDE_PIXELS
+from src.image_utils import open_image, trim_image, resize_image, normalize_image
 
 
 class ProcessUJIDataset(metaclass=abc.ABCMeta):
@@ -45,15 +46,14 @@ class ProcessUJIDataset(metaclass=abc.ABCMeta):
                     y = line[:, 1]
                     plt.scatter(x, y, s=0)
                     plt.plot(x, y, '-', c='b')
-                additional_filename = ""
-                if letter.isalpha():
-                    if letter.isupper():
-                        additional_filename += "-big"
-                    # elif letter.islower():
-                    #     additional_filename += "-sml"
-                        plt.savefig(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "datasets",
-                                                 "%s-%s%s-%d.png" % (self.images_prefix, letter, additional_filename, i)
-                                                 ), dpi=self.dpi)
+                if letter.isupper() or letter.isdigit():
+                    image_filename = os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "datasets",
+                                                  "%s-%s-%d.png" % (self.images_prefix, letter, i))
+                    plt.savefig(os.path.join(image_filename), dpi=self.dpi)
+                    image = open_image(image_filename)
+                    image = trim_image(image)
+                    image = resize_image(image)
+                    image.save(image_filename)
                 i += 1
 
     def create_csv(self, out_filename=None):
@@ -63,11 +63,10 @@ class ProcessUJIDataset(metaclass=abc.ABCMeta):
                 out:
             out.write("%s;%s\n" % ("symbol", ';'.join(["data%d" % i for i in range(self.dpi ** 2)])))
             for letter_file in glob.glob(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "datasets",
-                                                      "%s-*" % self.images_prefix)):
+                                                      "%s-*.png" % self.images_prefix)):
                 letter = os.path.basename(letter_file).split('-')[1]
                 image = imread(letter_file, flatten=True)
-                image = 255 - image.reshape(self.dpi ** 2)
-                image = (image / 255.0 * 0.99) + 0.01
+                image = normalize_image(image)
                 out.write("%s;%s\n" % (letter, ';'.join(['%.5f' % num for num in image])))
 
 
