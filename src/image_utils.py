@@ -40,6 +40,15 @@ def resize_image(image, dpi=IMAGE_SIDE_PIXELS):
     return image.resize((dpi, dpi), Image.LANCZOS)
 
 
+def crook_image(image, angle):
+    image2 = image.convert('RGBA')
+    image2 = image2.rotate(angle, resample=Image.BICUBIC)
+    white = Image.new('RGBA', image2.size, (255,) * 4)
+    image = Image.composite(image2, white, image2)
+    image = image.convert('L')
+    return image
+
+
 def process_image(image):
     # needs image read by pillow!
     # trim, resize and normalize to original size

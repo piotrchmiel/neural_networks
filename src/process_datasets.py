@@ -8,7 +8,7 @@ import urllib.request
 import zipfile
 from scipy.misc import imread
 from src.settings import IMAGE_SIDE_PIXELS, DATASETS_DIR
-from src.image_utils import open_image, trim_image, resize_image, normalize_image
+from src.image_utils import open_image, trim_image, resize_image, normalize_image, crook_image
 
 
 class ProcessUJIDataset(metaclass=abc.ABCMeta):
@@ -185,8 +185,6 @@ class ProcessHWCR(ProcessUJIDataset):
     # source: https://github.com/sachinkariyattin/HWCR/tree/master/training_set/training_set
     def __init__(self):
         super(ProcessHWCR, self).__init__()
-        self.persons_count = 11
-        self.persons = range(1, self.persons_count + 1)
         self.images_prefix = "HWCR"
 
     def is_dataset_present(self):
@@ -217,9 +215,44 @@ class ProcessHWCR(ProcessUJIDataset):
             i += 1
 
 
+class ProcessCrooked(ProcessUJIDataset):
+    def __init__(self):
+        super(ProcessCrooked, self).__init__()
+        self.images_prefix = "crooked"
+
+    def is_dataset_present(self):
+        return True
+
+    def acquire_dataset(self):
+        pass
+
+    def read_available_letters(self):
+        pass
+
+    def extract_letters(self):
+        pass
+
+    def dump_letters(self):
+        for filename in os.listdir(DATASETS_DIR):
+            if not filename.endswith('.png') and not filename.startswith(self.images_prefix):
+                continue
+            for angle in [-20, 20]:
+                letter = filename.split('-')[1]
+                image = open_image(os.path.join(DATASETS_DIR, filename))
+                image = crook_image(image, angle)
+                existing = [int(filename.split('-')[2].split('.')[0]) for filename in os.listdir(DATASETS_DIR) if
+                            filename.endswith('.png') and filename.startswith(self.images_prefix + "-" + letter)]
+                existing.sort()
+                if len(existing) > 0:
+                    i = existing[-1] + 1
+                else:
+                    i = 0
+                image.save(os.path.join(DATASETS_DIR, "%s-%s-%d.png" % (self.images_prefix, letter, i)))
+
+
 class ProcessDatasets(object):
     def __init__(self):
-        self.classes_to_process = [ProcessUJI1(), ProcessUJI2(), ProcessHWCR()]
+        self.classes_to_process = [ProcessUJI1(), ProcessUJI2(), ProcessHWCR(), ProcessCrooked()]
         for class_ in self.classes_to_process:
             self.process_uji_dataset(class_)
 
