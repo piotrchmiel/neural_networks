@@ -12,4 +12,4 @@ six==1.10.0
 tensorflow==0.11.0rc1
 flask==0.11.1
 joblib==0.10.3
-PIL==3.4.2
+Pillow==3.4.2
