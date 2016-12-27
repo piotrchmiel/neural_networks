@@ -39,7 +39,7 @@
         <button id="clear-canvas" class="btn btn-danger">Wyczyść pole</button>
         <button id="recognize" class="btn btn-primary">Rozpoznaj znak</button>
 
-        <div>Grubość pisaka: <input type="text" id="slider" data-provide="slider" data-slider-min="1" data-slider-max="50" data-slider-step="1" data-slider-value="40" data-slider-tooltip="hide"></div>
+        <div>Grubość pisaka: <input type="text" id="slider" data-provide="slider" data-slider-min="10" data-slider-max="50" data-slider-step="1" data-slider-value="35"></div>
     </div>
 </div>
 <footer class="footer">
@@ -108,10 +108,21 @@
           type: 'POST',
           data: { 'image': canvas_data },
           success: function(data) {
-            BootstrapDialog.show({title: 'Rozpoznana litera', message: data});
+              var predictions = JSON.parse(data);
+              var getSortedKeys = function(obj) {
+                  var keys = []; for(var key in obj) keys.push(key);
+                  return keys.sort(function(a,b){return obj[b]-obj[a]});
+              };
+              var message = "";
+              getSortedKeys(predictions).slice(0, 5).forEach(function(key, index) {
+                  if(index == 0) { message += "<strong>"; }
+                  message += key + ": " + (predictions[key] * 100).toFixed(2) + "%<br>";
+                  if(index == 0) { message += "</strong>"; }
+              });
+              BootstrapDialog.show({title: 'Rozpoznananie', message: message});
           },
           error: function(e) {
-            BootstrapDialog.show({type: BootstrapDialog.TYPE_DANGER, title: 'Błąd rozpoznawania!', message: ''});
+              BootstrapDialog.show({type: BootstrapDialog.TYPE_DANGER, title: 'Błąd rozpoznawania!', message: ''});
           }
         });
         copyCanvas.clear();
@@ -120,7 +131,7 @@
 
     if (canvas.freeDrawingBrush) {
         canvas.freeDrawingBrush.color = '#000000';
-        canvas.freeDrawingBrush.width = 40;
+        canvas.freeDrawingBrush.width = 35;
         canvas.freeDrawingBrush.shadowBlur = 0;
     }
 })();

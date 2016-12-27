@@ -2,6 +2,8 @@ import os
 import joblib
 import tensorflow as tf
 import numpy as np
+import pprint
+
 from src.settings import LOG_DIR, OBJECT_DIR
 
 
@@ -67,12 +69,27 @@ class NeuralNetwork(object):
 
     def predict(self, data, map_function):
         result = self.session.run(self.prediction, feed_dict={self.batch_x: np.asarray([data], dtype=np.float32),
-                                                              self.keep_prob: 1.0 })[0]
-        print(self.session.run(tf.nn.sigmoid(self.hidden_output_layer),
-                               feed_dict={self.batch_x: np.asarray([data], dtype=np.float32),self.keep_prob: 1.0 }))
+                                                              self.keep_prob: 1.0})[0]
         if callable(map_function):
             result = map_function(result)
         return result
+
+    def get_all_predictions(self, data, map_function):
+        predictions = self.session.run(tf.nn.sigmoid(self.hidden_output_layer),
+                                       feed_dict={
+                                           self.batch_x: np.asarray([data], dtype=np.float32),
+                                           self.keep_prob: 1.0
+                                       })[0]
+        results = {}
+        it = np.nditer(predictions, flags=['f_index'])
+        while not it.finished:
+            key = it.index
+            if callable(map_function):
+                key = map_function(key)
+            results[key] = float(it[0])
+            it.iternext()
+        pprint.pprint(results)
+        return results
 
     def fit(self, dataset):
         self.session.run(self.model)

@@ -9,7 +9,7 @@ from functools import partial
 from sklearn.datasets import fetch_mldata
 from sklearn.model_selection import train_test_split
 
-from src.settings import BASE_DIR, IMAGE_SIDE_PIXELS
+from src.settings import IMAGE_SIDE_PIXELS, DATASETS_DIR
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -18,7 +18,8 @@ import pandas as pd
 class HandwrittenDataset(metaclass=abc.ABCMeta):
 
     def __init__(self):
-        self.train, self.test, self.train_labels, self.test_labels = None, None, None, None
+        self.train, self.test, self.train_labels, self.test_labels, self.data, self.unique_classes, \
+            self.labels, self.dataset = None, None, None, None, None, None, None, None
         self.load_data()
         self.data_graduation()
         self.split_data()
@@ -41,7 +42,7 @@ class HandwrittenDataset(metaclass=abc.ABCMeta):
             train_test_split(self.data, self.labels, train_size=0.8)
 
     def train_batch_iterator(self, batch_size):
-        #TODO Find more efficient way to do split
+        # TODO Find more efficient way to do split
         train = list(zip(self.train, self.train_labels))
         random.shuffle(train)
         for i in range(0, len(self.train_labels), batch_size):
@@ -59,6 +60,7 @@ class HandwrittenDataset(metaclass=abc.ABCMeta):
     def map_result(self, index):
         raise NotImplementedError
 
+
 class Mnist(HandwrittenDataset):
 
     def __init__(self):
@@ -71,7 +73,7 @@ class Mnist(HandwrittenDataset):
         self.dataset.data = self.dataset.data.astype(np.float)
         self.dataset.data[self.dataset.data != 0.0] = 0.99
         self.dataset.data[self.dataset.data == 0.0] = 0.01
-        #self.data = np.add(np.dot(np.divide(self.dataset.data, 255), 0.99), 0.01)
+        # self.data = np.add(np.dot(np.divide(self.dataset.data, 255), 0.99), 0.01)
         self.data = self.dataset.data
         self.unique_classes = sorted(np.unique(self.dataset.target).tolist())
         nodes = len(self.unique_classes)
@@ -85,10 +87,12 @@ class Mnist(HandwrittenDataset):
     def map_result(self, index):
         return self.unique_classes[index]
 
+
 class Uji(HandwrittenDataset):
 
     def __init__(self):
         super().__init__()
+        self.encoded_labels = None
 
     def load_data(self):
         self.dataset = UJIData()
@@ -120,8 +124,7 @@ class UJIData(object):
 
     def __init__(self, filenames=None):
         if filenames is None:
-            datasets_dir = os.path.join(BASE_DIR, "datasets")
-            self.filenames = [os.path.join(datasets_dir, "UJI1.csv"), os.path.join(datasets_dir, "UJI2.csv")]
+            self.filenames = [os.path.join(DATASETS_DIR, dataset) for dataset in ['UJI1.csv', 'UJI2.csv', 'HWCR.csv']]
 
         try:
             self.verify_filenames_exist()

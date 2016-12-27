@@ -1,5 +1,6 @@
 import os
 import joblib
+import json
 from flask import Flask, render_template, request, send_from_directory, abort
 from src.utils import load_neural_network
 from src.image_utils import load_image_from_base64_uri, process_image
@@ -27,7 +28,7 @@ def handle_image():
     image = load_image_from_base64_uri(data)
     try:
         image = process_image(image)
-        return str(nn.predict(image, dataset.map_result))
+        return json.dumps(nn.get_all_predictions(image, dataset.map_result))
     except:
         abort(500)
 
