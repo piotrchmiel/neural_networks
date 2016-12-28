@@ -32,6 +32,14 @@ def handle_image():
     except:
         abort(500)
 
+@app.route('/save_character', methods=['POST'])
+def handle_character():
+    character = request.form['character']
+    image = load_image_from_base64_uri(request.form['image'])
+    try:
+        return json.dumps({'success':True}), 200, {'ContentType': 'application/json'}
+    except:
+        abort(500)
 
 def init_server():
     global dataset, nn
