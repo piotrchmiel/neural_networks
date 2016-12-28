@@ -161,12 +161,12 @@
         canvas.freeDrawingBrush.shadowBlur = 0;
     }
 
-    $("#char-form").submit(function ( event ) {
+    jQuery("#char-form").submit(function ( event ) {
             event.preventDefault();
             var canvas_data = getPng();
             copyCanvas.calcOffset();
-            var character = $("#char").val();
-            $.post("/save_character", {"character" : character, 'image': canvas_data}).then(function () {
+            var character = jQuery("#char").val();
+            jQuery.post("/save_character", {"character" : character, 'image': canvas_data}).then(function () {
                 BootstrapDialog.alert('Zapisano !');
             }, function () {
                 BootstrapDialog.show({type: BootstrapDialog.TYPE_DANGER,

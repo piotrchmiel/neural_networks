@@ -1,10 +1,12 @@
 import os
 import joblib
 import json
+import numpy as np
 from flask import Flask, render_template, request, send_from_directory, abort
-from src.utils import load_neural_network
-from src.image_utils import load_image_from_base64_uri, process_image
-from src.settings import OBJECT_DIR, IMAGE_SIDE_PIXELS
+from src.utils import load_neural_network, add_new_image
+from src.image_utils import load_image_from_base64_uri, process_image, resize_image
+from src.settings import OBJECT_DIR, IMAGE_SIDE_PIXELS, DATASETS_DIR
+
 
 
 app = Flask(__name__, static_url_path='/static', static_folder='server/static', template_folder='server/templates')
@@ -32,12 +34,17 @@ def handle_image():
     except:
         abort(500)
 
+
 @app.route('/save_character', methods=['POST'])
 def handle_character():
     character = request.form['character']
-    image = load_image_from_base64_uri(request.form['image'])
+    image = resize_image(load_image_from_base64_uri(request.form['image']))
+    image_vector = np.asarray(image, dtype=np.float32).tolist()
+    flatten_image_vector = [item for sublist in image_vector for item in sublist]
+    flatten_image_vector.insert(0, character)
+    add_new_image(os.path.join(DATASETS_DIR, 'ProjectCharacters.csv'), flatten_image_vector)
     try:
-        return json.dumps({'success':True}), 200, {'ContentType': 'application/json'}
+        return json.dumps({'success': True}), 200, {'ContentType': 'application/json'}
     except:
         abort(500)
 
