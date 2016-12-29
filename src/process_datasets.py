@@ -47,13 +47,12 @@ class ProcessUJIDataset(metaclass=abc.ABCMeta):
                     y = line[:, 1]
                     plt.scatter(x, y, s=0)
                     plt.plot(x, y, '-', c='b')
-                if letter.isupper() or letter.isdigit():
-                    image_filename = os.path.join(DATASETS_DIR, "%s-%s-%d.png" % (self.images_prefix, letter, i))
-                    plt.savefig(os.path.join(image_filename), dpi=self.dpi)
-                    image = open_image(image_filename)
-                    image = trim_image(image)
-                    image = resize_image(image)
-                    image.save(image_filename)
+                additional_filename = ""
+                if letter.isalpha():
+                    additional_filename = "-big" if letter.isupper() else "-sml"
+                image_filename = os.path.join(DATASETS_DIR, "{}-{}{}-{}.png".format(self.images_prefix, letter,
+                                                                                    additional_filename, i))
+                plt.savefig(os.path.join(image_filename), dpi=self.dpi)
                 i += 1
 
     def create_csv(self, out_filename=None):
@@ -61,12 +60,13 @@ class ProcessUJIDataset(metaclass=abc.ABCMeta):
             out_filename = "%s.csv" % self.images_prefix
         with open(os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "datasets", out_filename), 'w') as \
                 out:
-            out.write("%s;%s\n" % ("symbol", ';'.join(["data%d" % i for i in range(self.dpi ** 2)])))
-            for letter_file in glob.glob(os.path.join(DATASETS_DIR, "%s-*.png" % self.images_prefix)):
+            out.write("{};{}\n".format("symbol", ';'.join(["data%d" % i for i in range(self.dpi ** 2)])))
+            for letter_file in glob.glob(os.path.join(DATASETS_DIR, "{}-*.png".format(self.images_prefix))):
                 letter = os.path.basename(letter_file).split('-')[1]
-                image = imread(letter_file, flatten=True)
-                image = normalize_image(image)
-                out.write("%s;%s\n" % (letter, ';'.join(['%.2f' % num for num in image])))
+                image = imread(letter_file, flatten=True, mode='L')
+                image = image.reshape(self.dpi ** 2)
+                image = image.astype(np.uint8)
+                out.write("{};{}\n".format(letter, ';'.join([str(num) for num in image])))
 
 
 class ProcessUJI1(ProcessUJIDataset):
@@ -211,48 +211,13 @@ class ProcessHWCR(ProcessUJIDataset):
             if previous_letter != letter:
                 previous_letter = letter
                 i = 0
-            image.save(os.path.join(DATASETS_DIR, "%s-%s-%d.png" % (self.images_prefix, letter, i)))
+            image.save(os.path.join(DATASETS_DIR, "{}-{}-{}.png".format(self.images_prefix, letter, i)))
             i += 1
-
-
-class ProcessCrooked(ProcessUJIDataset):
-    def __init__(self):
-        super(ProcessCrooked, self).__init__()
-        self.images_prefix = "crooked"
-
-    def is_dataset_present(self):
-        return True
-
-    def acquire_dataset(self):
-        pass
-
-    def read_available_letters(self):
-        pass
-
-    def extract_letters(self):
-        pass
-
-    def dump_letters(self):
-        for filename in os.listdir(DATASETS_DIR):
-            if not filename.endswith('.png') and not filename.startswith(self.images_prefix):
-                continue
-            for angle in [-20, 20]:
-                letter = filename.split('-')[1]
-                image = open_image(os.path.join(DATASETS_DIR, filename))
-                image = crook_image(image, angle)
-                existing = [int(filename.split('-')[2].split('.')[0]) for filename in os.listdir(DATASETS_DIR) if
-                            filename.endswith('.png') and filename.startswith(self.images_prefix + "-" + letter)]
-                existing.sort()
-                if len(existing) > 0:
-                    i = existing[-1] + 1
-                else:
-                    i = 0
-                image.save(os.path.join(DATASETS_DIR, "%s-%s-%d.png" % (self.images_prefix, letter, i)))
 
 
 class ProcessDatasets(object):
     def __init__(self):
-        self.classes_to_process = [ProcessUJI1(), ProcessUJI2(), ProcessHWCR(), ProcessCrooked()]
+        self.classes_to_process = [ProcessUJI1(), ProcessUJI2(), ProcessHWCR()]
         for class_ in self.classes_to_process:
             self.process_uji_dataset(class_)
 

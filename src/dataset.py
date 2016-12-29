@@ -10,9 +10,11 @@ from sklearn.datasets import fetch_mldata
 from sklearn.model_selection import train_test_split
 
 from src.settings import IMAGE_SIDE_PIXELS, DATASETS_DIR
+from src.image_utils import trim_image, resize_image, crook_image, normalize_image
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from PIL import Image
 
 
 class HandwrittenDataset(metaclass=abc.ABCMeta):
@@ -124,8 +126,7 @@ class UJIData(object):
 
     def __init__(self, filenames=None):
         if filenames is None:
-            self.filenames = [os.path.join(DATASETS_DIR, dataset) for dataset in ['UJI1.csv', 'UJI2.csv', 'HWCR.csv',
-                                                                                  'crooked.csv']]
+            self.filenames = [os.path.join(DATASETS_DIR, dataset) for dataset in ['UJI1.csv', 'UJI2.csv', 'HWCR.csv']]
 
         try:
             self.verify_filenames_exist()
@@ -148,6 +149,46 @@ class UJIData(object):
             else:
                 self.data = data
             self.target += list(labels)
+        self.process_datasets()
+
+    def process_datasets(self):
+        self.filter_datasets()
+        self.data = self.data.astype(np.float32)
+        data_length = len(self.data)
+        crooked_data = np.zeros((data_length * 2, len(self.data[0])))
+        for i in range(data_length):
+            row = self.data[i]
+            image = Image.fromarray(row.reshape(IMAGE_SIDE_PIXELS, IMAGE_SIDE_PIXELS).astype(np.uint8), mode='L')
+            image = trim_image(image)
+            image = resize_image(image)
+            crooked_image_1 = crook_image(image, 20)
+            crooked_image_2 = crook_image(image, -20)
+
+            image = np.asarray(image, dtype=np.float32)
+            crooked_image_1 = np.asarray(crooked_image_1, dtype=np.float32)
+            crooked_image_2 = np.asarray(crooked_image_2, dtype=np.float32)
+
+            image = normalize_image(image)
+            crooked_image_1 = normalize_image(crooked_image_1)
+            crooked_image_2 = normalize_image(crooked_image_2)
+
+            self.data[i] = image
+            crooked_data[i * 2 + 0] = crooked_image_1
+            crooked_data[i * 2 + 1] = crooked_image_2
+
+            for _ in range(2):  # 2 crooked images
+                self.target.append(self.target[i])
+        self.data = np.concatenate((self.data, crooked_data), axis=0)
+
+    def filter_datasets(self):
+        filters = ['isupper', 'isnumeric']
+        to_remove = []
+        for index, letter in enumerate(self.target):
+            passed = any([getattr(letter, filter_)() for filter_ in filters])
+            if not passed:
+                to_remove.append(index)
+        self.target = [i for j, i in enumerate(self.target) if j not in to_remove]
+        self.data = np.delete(self.data, to_remove, 0)
 
     def verify_filenames_exist(self):
         for path in self.filenames:
