@@ -181,10 +181,10 @@ class UJIData(object):
         self.data = np.concatenate((self.data, crooked_data), axis=0)
 
     def filter_datasets(self):
-        filters = ['isupper', 'isnumeric']
+        filters = [str.isupper, str.isnumeric]
         to_remove = []
         for index, letter in enumerate(self.target):
-            passed = any([getattr(letter, filter_)() for filter_ in filters])
+            passed = any([filter_(letter) for filter_ in filters])
             if not passed:
                 to_remove.append(index)
         self.target = [i for j, i in enumerate(self.target) if j not in to_remove]
