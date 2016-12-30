@@ -26,6 +26,7 @@ def append_row_to_csv(full_file_path, row):
         writer = csv.writer(csvfile, delimiter=';')
         writer.writerow(row)
 
+
 def add_new_image(full_file_path, row):
     if not os.path.exists(full_file_path):
         create_csv(full_file_path, len(row))

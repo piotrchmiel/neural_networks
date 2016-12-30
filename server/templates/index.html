@@ -167,7 +167,7 @@
             copyCanvas.calcOffset();
             var character = jQuery("#char").val();
             jQuery.post("/save_character", {"character" : character, 'image': canvas_data}).then(function () {
-                BootstrapDialog.alert('Zapisano !');
+                BootstrapDialog.alert('Zapisano!');
             }, function () {
                 BootstrapDialog.show({type: BootstrapDialog.TYPE_DANGER,
                     title: 'Błąd', message: 'Coś poszło nie tak...'});

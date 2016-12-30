@@ -34,6 +34,8 @@ def trim_image(image):
     bbox = diff.getbbox()
     if bbox:
         return image.crop(bbox)
+    else:
+        return image
 
 
 def resize_image(image, dpi=IMAGE_SIDE_PIXELS):
