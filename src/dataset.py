@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from PIL import Image
-
+from pprint import pprint
 
 class HandwrittenDataset(metaclass=abc.ABCMeta):
 
@@ -51,7 +51,12 @@ class HandwrittenDataset(metaclass=abc.ABCMeta):
             yield zip(*train[i:i + batch_size])
 
     def print_dataset_stats(self):
-        print(self.labels)
+        cnt = collections.Counter()
+        for char in self.dataset.target:
+            cnt[char] += 1
+
+        pprint(cnt)
+
     @property
     def feature_number(self):
         return len(self.data[0])

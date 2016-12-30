@@ -39,7 +39,7 @@ def handle_image():
 def handle_character():
     character = request.form['character']
     image = resize_image(load_image_from_base64_uri(request.form['image']))
-    image_vector = np.asarray(image, dtype=np.float32).tolist()
+    image_vector = np.asarray(image, dtype=np.uint8).tolist()
     flatten_image_vector = [item for sublist in image_vector for item in sublist]
     flatten_image_vector = [int(i) for i in flatten_image_vector]
     flatten_image_vector.insert(0, character)
