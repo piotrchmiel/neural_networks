@@ -15,7 +15,7 @@ def load_neural_network():
 
 def create_csv(full_file_path, size):
     with open(full_file_path, 'w', newline="") as csvfile:
-        fieldnames = ["data{}".format(i) for i in range(size)]
+        fieldnames = ["data{}".format(i) for i in range(size-1)]
         fieldnames.insert(0, "symbol")
         writer = csv.DictWriter(csvfile, fieldnames, delimiter=";")
         writer.writeheader()

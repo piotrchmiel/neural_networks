@@ -48,6 +48,7 @@ def handle_character():
     except:
         abort(500)
 
+
 def init_server():
     global dataset, nn
     dataset = joblib.load(os.path.join(OBJECT_DIR, "Uji"))

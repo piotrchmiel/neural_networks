@@ -50,6 +50,8 @@ class HandwrittenDataset(metaclass=abc.ABCMeta):
         for i in range(0, len(self.train_labels), batch_size):
             yield zip(*train[i:i + batch_size])
 
+    def print_dataset_stats(self):
+        print(self.labels)
     @property
     def feature_number(self):
         return len(self.data[0])
@@ -126,7 +128,8 @@ class UJIData(object):
 
     def __init__(self, filenames=None):
         if filenames is None:
-            self.filenames = [os.path.join(DATASETS_DIR, dataset) for dataset in ['UJI1.csv', 'UJI2.csv', 'HWCR.csv']]
+            self.filenames = [os.path.join(DATASETS_DIR, dataset) for dataset in ['UJI1.csv', 'UJI2.csv',
+                                                                                  'HWCR.csv', 'ProjectCharacters.csv']]
 
         try:
             self.verify_filenames_exist()
