@@ -1,7 +1,7 @@
-from src.dataset import Uji
+from src.dataset import UJIData
 
 def main():
-    dataset = Uji()
+    dataset = UJIData()
     dataset.print_dataset_stats()
 
 

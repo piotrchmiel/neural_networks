@@ -17,6 +17,7 @@ import pandas as pd
 from PIL import Image
 from pprint import pprint
 
+
 class HandwrittenDataset(metaclass=abc.ABCMeta):
 
     def __init__(self):
@@ -49,13 +50,6 @@ class HandwrittenDataset(metaclass=abc.ABCMeta):
         random.shuffle(train)
         for i in range(0, len(self.train_labels), batch_size):
             yield zip(*train[i:i + batch_size])
-
-    def print_dataset_stats(self):
-        cnt = collections.Counter()
-        for char in self.dataset.target:
-            cnt[char] += 1
-
-        pprint(cnt)
 
     @property
     def feature_number(self):
@@ -143,6 +137,7 @@ class UJIData(object):
             self._extract_files(compressed)
 
         self.target = []
+        self.stats = []
         self.data = None
         self.load_data()
 
@@ -156,8 +151,22 @@ class UJIData(object):
                 self.data = np.concatenate((self.data, data))
             else:
                 self.data = data
+
             self.target += list(labels)
+            self.stats.append(tuple([file, self.count_data(labels)]))
         self.process_datasets()
+
+    def count_data(self, labels):
+        cnt = collections.Counter()
+        for char in labels:
+            cnt[char] += 1
+
+        return cnt
+
+    def print_dataset_stats(self):
+        for filename, cnt in self.stats:
+            print(filename)
+            pprint(cnt)
 
     def process_datasets(self):
         self.filter_datasets()
