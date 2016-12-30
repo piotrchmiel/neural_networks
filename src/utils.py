@@ -14,7 +14,7 @@ def load_neural_network():
 
 
 def create_csv(full_file_path, size):
-    with open(full_file_path, 'w', newline="") as csvfile:
+    with open(full_file_path, 'w', newline="", encoding='utf-8') as csvfile:
         fieldnames = ["data{}".format(i) for i in range(size-1)]
         fieldnames.insert(0, "symbol")
         writer = csv.DictWriter(csvfile, fieldnames, delimiter=";")
@@ -22,7 +22,7 @@ def create_csv(full_file_path, size):
 
 
 def append_row_to_csv(full_file_path, row):
-    with open(full_file_path, 'a', newline="") as csvfile:
+    with open(full_file_path, 'a', newline="", encoding='utf-8') as csvfile:
         writer = csv.writer(csvfile, delimiter=';')
         writer.writerow(row)
 

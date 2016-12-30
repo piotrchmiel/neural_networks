@@ -127,8 +127,8 @@ class UJIData(object):
 
     def __init__(self, filenames=None):
         if filenames is None:
-            self.filenames = [os.path.join(DATASETS_DIR, dataset) for dataset in ['UJI1.csv', 'UJI2.csv',
-                                                                                  'HWCR.csv', 'ProjectCharacters.csv']]
+            self.filenames = [os.path.join(DATASETS_DIR, dataset) for dataset in ['UJI2.csv', 'HWCR.csv',
+                                                                                  'ProjectCharacters.csv']]
 
         try:
             self.verify_filenames_exist()
