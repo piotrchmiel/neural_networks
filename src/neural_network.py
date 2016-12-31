@@ -10,7 +10,8 @@ from src.settings import LOG_DIR, OBJECT_DIR
 class NeuralNetwork(object):
 
     def __init__(self, input_nodes: int, hidden_nodes: int, output_nodes: int,
-                 learning_rate: float, batch_size: int, training_epochs: int, dropout: float, debug=False):
+                 learning_rate: float, batch_size: int, training_epochs: int, dropout: float,
+                 optimizer = tf.train.AdamOptimizer, debug=False):
         self.batch_size = batch_size
         self.training_epochs = training_epochs
         self.debug = debug
@@ -19,6 +20,7 @@ class NeuralNetwork(object):
         self.hidden_nodes = hidden_nodes
         self.output_nodes = output_nodes
         self.learning_rate = learning_rate
+        self._optimizer = optimizer
 
         with tf.name_scope('input'):
             self.batch_x = tf.placeholder(tf.float32, [None, input_nodes], name="Batch_x_input")
@@ -44,7 +46,7 @@ class NeuralNetwork(object):
             tf.scalar_summary('cross entropy', self.cross_entropy)
 
         with tf.name_scope('train'):
-            self.train_step = tf.train.AdamOptimizer(self.learning_rate).minimize(self.cross_entropy)
+            self.train_step = self._optimizer(self.learning_rate).minimize(self.cross_entropy)
 
         with tf.name_scope('test'):
             with tf.name_scope('prediction'):
