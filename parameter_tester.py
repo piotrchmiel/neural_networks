@@ -13,18 +13,17 @@ def main():
     LEARNING_RATES = [0.01, 0.02, 0.05, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
     TRAINING_EPOCHS = [10, 20, 50, 100, 200, 300, 400, 500, 700, 1000]
     RESULTS = []
+
     for optimizer in OPTIMIZERS:
         print(optimizer)
         for learning_rate in LEARNING_RATES:
             print("Learning rate: {}".format(learning_rate))
-            for training_epochs in TRAINING_EPOCHS:
-                print("Training epochs: {}".format(training_epochs))
-                with NeuralNetwork(input_nodes=dataset.feature_number, hidden_nodes=200,
-                                   output_nodes=dataset.label_number, learning_rate=learning_rate, batch_size=100,
-                                   training_epochs=training_epochs, dropout=0.6, optimizer=optimizer,
-                                   debug=False) as nn:
-                    nn.fit(dataset)
-                    RESULTS.append(tuple([nn.accuracy(dataset), optimizer, learning_rate, training_epochs]))
+            with NeuralNetwork(input_nodes=dataset.feature_number, hidden_nodes=200, output_nodes=dataset.label_number,
+                               learning_rate=learning_rate, batch_size=100,training_epochs=TRAINING_EPOCHS[-1],
+                               dropout=0.6, optimizer=optimizer, debug=False) as nn:
+                accuracy_results = nn.fit(dataset, TRAINING_EPOCHS)
+                for accuracy, training_epoch in zip(accuracy_results, TRAINING_EPOCHS):
+                    RESULTS.append(tuple([accuracy, optimizer, learning_rate, training_epoch]))
 
     RESULTS.sort(key=lambda row: row[0], reverse=True)
 

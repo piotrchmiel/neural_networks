@@ -93,7 +93,8 @@ class NeuralNetwork(object):
         pprint.pprint(results)
         return results
 
-    def fit(self, dataset):
+    def fit(self, dataset, snapshot_epoches = []):
+        snapshot_results = []
         self.session.run(self.model)
         total_batch = tf.constant(int(len(dataset.train_labels) / self.batch_size),
                                   dtype=tf.float32)
@@ -118,10 +119,18 @@ class NeuralNetwork(object):
                     self.train_writer.add_summary(summary[0], step)
                 avg_cost += part_avg
 
+            accuarcy = self.accuracy(dataset, step)
+            epoch_no = epoch + 1
+
+            if epoch_no in snapshot_epoches:
+                snapshot_results.append(accuarcy)
+
             print("Epoch {:04d} cost= {:.9f}, accuracy= {:.9f}".format(
-                epoch, avg_cost, self.accuracy(dataset, step)))
+                epoch_no, avg_cost, accuarcy))
 
         print("Training phase finished")
+
+        return snapshot_results
 
     def accuracy(self, dataset, step=-1):
         execution = [self.accuracy_operation]
