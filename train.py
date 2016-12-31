@@ -15,7 +15,7 @@ def main():
     #                  learning_rate=0.01, batch_size=100, training_epochs=350, dropout=0.6,
     #                  optimizer=tf.train.AdamOptimizer, debug=False
     with NeuralNetwork(input_nodes=dataset.feature_number, hidden_nodes=200, output_nodes=dataset.label_number,
-                       learning_rate=0.3, batch_size=100, training_epochs=350, dropout=0.6,
+                       learning_rate=0.3, batch_size=100, training_epochs=500, dropout=0.6,
                        optimizer=tf.train.AdagradOptimizer, debug=False) as nn:
         nn.fit(dataset)
         nn.save_model()

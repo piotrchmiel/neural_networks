@@ -173,7 +173,7 @@ class NeuralNetwork(object):
         init_params = {'input_nodes': self.input_nodes, 'hidden_nodes': self.hidden_nodes,
                        'output_nodes': self.output_nodes, 'learning_rate': self.learning_rate,
                        'batch_size': self.batch_size, 'training_epochs': self.training_epochs,
-                       'dropout': self.dropout, 'debug': self.debug}
+                       'dropout': self.dropout, 'optimizer': self._optimizer, 'debug': self.debug}
         joblib.dump(init_params, os.path.join(OBJECT_DIR, 'init_params.pickle'))
         tf.train.Saver(tf.all_variables()).save(self.session, os.path.join(OBJECT_DIR, 'model.ckpt'))
 
