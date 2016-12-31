@@ -11,8 +11,8 @@ def main():
     # joblib.dump(dataset, os.path.join(OBJECT_DIR, "Mnist"))
     joblib.dump(dataset, os.path.join(OBJECT_DIR, "Uji"))
 
-    with NeuralNetwork(input_nodes=dataset.feature_number, hidden_nodes=250, output_nodes=dataset.label_number,
-                       learning_rate=0.01, batch_size=100, training_epochs=100, dropout=1,
+    with NeuralNetwork(input_nodes=dataset.feature_number, hidden_nodes=200, output_nodes=dataset.label_number,
+                       learning_rate=0.01, batch_size=100, training_epochs=100, dropout=0.6,
                        debug=False) as nn:
         nn.fit(dataset)
         nn.save_model()
