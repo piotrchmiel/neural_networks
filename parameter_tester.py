@@ -7,9 +7,8 @@ import tensorflow as tf
 
 def main():
     dataset = Uji()
-    OPTIMIZERS = [tf.train.AdamOptimizer, tf.train.GradientDescentOptimizer,
-                  tf.train.AdagradOptimizer, tf.train.AdadeltaOptimizer, tf.train.MomentumOptimizer,
-                  tf.train.RMSPropOptimizer]
+    OPTIMIZERS = [tf.train.RMSPropOptimizer, tf.train.AdamOptimizer, tf.train.GradientDescentOptimizer,
+                  tf.train.AdagradOptimizer, tf.train.AdadeltaOptimizer]
     LEARNING_RATES = [0.01, 0.02, 0.05, 0.1, 0.15, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7]
     TRAINING_EPOCHS = [10, 20, 50, 100, 200, 300, 400, 500, 700, 1000]
     RESULTS = []
@@ -25,12 +24,19 @@ def main():
                 for accuracy, training_epoch in zip(accuracy_results, TRAINING_EPOCHS):
                     RESULTS.append(tuple([accuracy, optimizer, learning_rate, training_epoch]))
 
-    RESULTS.sort(key=lambda row: row[0], reverse=True)
+    RESULTS.sort(key=lambda row: row[0][0], reverse=True)
 
-    with open(os.path.join(BASE_DIR, 'parametr_stats.txt'), 'w') as fh:
-        for accuracy, optimizer, learning_rate, training_epochs in RESULTS:
-            fh.write("Accuracy {0} Optimizer {1} Learning Rate {2}, Training Epoches: {3}\n".format(
-                accuracy, optimizer, learning_rate, training_epochs))
+    with open(os.path.join(BASE_DIR, 'parametr_stats_by_accuracy.txt'), 'w') as fh:
+        for snapshot_results, optimizer, learning_rate, training_epochs in RESULTS:
+            fh.write("Accuracy {0} Cost {1} Optimizer {2} Learning Rate {3}, Training Epoches: {4}\n".format(
+                snapshot_results[0], snapshot_results[1], optimizer, learning_rate, training_epochs))
+
+    RESULTS.sort(key=lambda row: row[0][1])
+
+    with open(os.path.join(BASE_DIR, 'parametr_stats_by_cost.txt'), 'w') as fh:
+        for snapshot_results, optimizer, learning_rate, training_epochs in RESULTS:
+            fh.write("Accuracy {0} Cost {1} Optimizer {2} Learning Rate {3}, Training Epoches: {4}\n".format(
+                snapshot_results[0], snapshot_results[1], optimizer, learning_rate, training_epochs))
 
 if __name__ == '__main__':
     main()

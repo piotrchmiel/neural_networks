@@ -123,7 +123,7 @@ class NeuralNetwork(object):
             epoch_no = epoch + 1
 
             if epoch_no in snapshot_epoches:
-                snapshot_results.append(accuarcy)
+                snapshot_results.append(tuple([accuarcy, avg_cost]))
 
             print("Epoch {:04d} cost= {:.9f}, accuracy= {:.9f}".format(
                 epoch_no, avg_cost, accuarcy))
